@@ -17,8 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "adocoes")
@@ -32,19 +30,16 @@ public class Adocao {
     @Column(name = "data")
     private LocalDateTime data;
 
-    @NotNull
     @ManyToOne
     @JsonBackReference("tutor_adocoes")
     @JoinColumn(name = "tutor_id")
     private Tutor tutor;
 
-    @NotNull
     @OneToOne
     @JoinColumn(name = "pet_id")
     @JsonManagedReference("adocao_pets")
     private Pet pet;
 
-    @NotBlank
     @Column(name = "motivo")
     private String motivo;
 
