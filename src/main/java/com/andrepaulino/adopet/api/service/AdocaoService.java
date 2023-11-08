@@ -1,6 +1,5 @@
 package com.andrepaulino.adopet.api.service;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -12,7 +11,6 @@ import com.andrepaulino.adopet.api.dto.ReprovacaoAdocaoDto;
 import com.andrepaulino.adopet.api.dto.SolicitacaoAdocaoDto;
 import com.andrepaulino.adopet.api.model.Adocao;
 import com.andrepaulino.adopet.api.model.Pet;
-import com.andrepaulino.adopet.api.model.StatusAdocao;
 import com.andrepaulino.adopet.api.model.Tutor;
 import com.andrepaulino.adopet.api.repository.AdocaoRepository;
 import com.andrepaulino.adopet.api.repository.PetRepository;
@@ -43,12 +41,7 @@ public class AdocaoService {
 
         validacoes.forEach(v -> v.validar(dto));
 
-        Adocao adocao = new Adocao();
-        adocao.setData(LocalDateTime.now());
-        adocao.setStatus(StatusAdocao.AGUARDANDO_AVALIACAO);
-        adocao.setPet(pet);
-        adocao.setTutor(tutor);
-        adocao.setMotivo(dto.motivo());
+        Adocao adocao = new Adocao(tutor, pet, dto.motivo());
 
         repository.save(adocao);
 
@@ -56,35 +49,39 @@ public class AdocaoService {
                 adocao.getPet().getAbrigo().getEmail(),
                 "Solicitação de adoção",
                 "Olá " + adocao.getPet().getAbrigo().getNome()
-                        + "!\n\nUma solicitação de adoção foi registrada hoje para o pet: " + adocao.getPet().getNome()
+                        + "!\n\nUma solicitação de adoção foi registrada hoje para o pet: "
+                        + adocao.getPet().getNome()
                         + ". \nFavor avaliar para aprovação ou reprovação.");
     }
 
     public void aprovar(AprovacaoAdocaoDto dto) {
         Adocao adocao = repository.getReferenceById(dto.idAdocao());
-        adocao.setStatus(StatusAdocao.APROVADO);
+        adocao.marcarComoAprovada();
 
         emailService.enviarEmail(
                 adocao.getPet().getAbrigo().getEmail(),
                 "Adoção aprovada",
-                "Parabéns " + adocao.getTutor().getNome() + "!\n\nSua adoção do pet " + adocao.getPet().getNome()
+                "Parabéns " + adocao.getTutor().getNome() + "!\n\nSua adoção do pet "
+                        + adocao.getPet().getNome()
                         + ", solicitada em "
-                        + adocao.getData().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+                        + adocao.getData().format(
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
                         + ", foi aprovada.\nFavor entrar em contato com o abrigo "
-                        + adocao.getPet().getAbrigo().getNome() + " para agendar a busca do seu pet.");
+                        + adocao.getPet().getAbrigo().getNome()
+                        + " para agendar a busca do seu pet.");
     }
 
     public void reprovar(ReprovacaoAdocaoDto dto) {
         Adocao adocao = repository.getReferenceById(dto.idAdocao());
-        adocao.setStatus(StatusAdocao.REPROVADO);
-        adocao.setJustificativaStatus(dto.justificativa());
+        adocao.marcarComoReprovada(dto.justificativa());
 
         emailService.enviarEmail(
                 adocao.getPet().getAbrigo().getEmail(),
                 "Solicitação de adoção",
                 "Olá " + adocao.getTutor().getNome() + "!\n\nInfelizmente sua adoção do pet "
                         + adocao.getPet().getNome() + ", solicitada em "
-                        + adocao.getData().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+                        + adocao.getData().format(
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
                         + ", foi reprovada pelo abrigo " + adocao.getPet().getAbrigo().getNome()
                         + " com a seguinte justificativa: " + adocao.getJustificativaStatus());
     }

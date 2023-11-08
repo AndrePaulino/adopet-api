@@ -1,16 +1,17 @@
-package br.com.alura.adopet.api.validacoes;
+package com.andrepaulino.adopet.api.validation;
 
-import br.com.alura.adopet.api.dto.SolicitacaoAdocaoDto;
-import br.com.alura.adopet.api.excpetion.ValidacaoExcpetion;
-import br.com.alura.adopet.api.model.Adocao;
-import br.com.alura.adopet.api.model.StatusAdocao;
-import br.com.alura.adopet.api.model.Tutor;
-import br.com.alura.adopet.api.repository.AdocaoRepository;
-import br.com.alura.adopet.api.repository.TutorRepository;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import com.andrepaulino.adopet.api.dto.SolicitacaoAdocaoDto;
+import com.andrepaulino.adopet.api.exception.ValidacaoException;
+import com.andrepaulino.adopet.api.model.Adocao;
+import com.andrepaulino.adopet.api.model.StatusAdocao;
+import com.andrepaulino.adopet.api.model.Tutor;
+import com.andrepaulino.adopet.api.repository.AdocaoRepository;
+import com.andrepaulino.adopet.api.repository.TutorRepository;
 
 @Component
 public class ValidacaoTutorComLimiteDeAdocoes implements ValidacaoSolicitacaoAdocao {
@@ -21,6 +22,7 @@ public class ValidacaoTutorComLimiteDeAdocoes implements ValidacaoSolicitacaoAdo
     @Autowired
     private TutorRepository tutorRepository;
 
+    @Override
     public void validar(SolicitacaoAdocaoDto dto) {
         List<Adocao> adocoes = adocaoRepository.findAll();
         Tutor tutor = tutorRepository.getReferenceById(dto.idTutor());
@@ -30,7 +32,7 @@ public class ValidacaoTutorComLimiteDeAdocoes implements ValidacaoSolicitacaoAdo
                 contador = contador + 1;
             }
             if (contador == 5) {
-                throw new ValidacaoExcpetion("Tutor chegou ao limite máximo de 5 adoções!");
+                throw new ValidacaoException("Tutor chegou ao limite máximo de 5 adoções!");
             }
         }
     }
