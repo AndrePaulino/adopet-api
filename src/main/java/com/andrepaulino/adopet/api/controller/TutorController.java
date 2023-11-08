@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.andrepaulino.adopet.api.model.Tutor;
-import com.andrepaulino.adopet.api.repository.TutorRepository;
+import com.andrepaulino.adopet.api.dto.AtualizacaoTutorDto;
+import com.andrepaulino.adopet.api.dto.CadastroTutorDto;
+import com.andrepaulino.adopet.api.exception.ValidacaoException;
+import com.andrepaulino.adopet.api.service.TutorService;
 
 import jakarta.validation.Valid;
 
@@ -19,27 +21,28 @@ import jakarta.validation.Valid;
 public class TutorController {
 
     @Autowired
-    private TutorRepository repository;
+    private TutorService service;
 
     @PostMapping
     @Transactional
-    public ResponseEntity<String> cadastrar(@RequestBody @Valid Tutor tutor) {
-        boolean telefoneJaCadastrado = repository.existsByTelefone(tutor.getTelefone());
-        boolean emailJaCadastrado = repository.existsByEmail(tutor.getEmail());
-
-        if (telefoneJaCadastrado || emailJaCadastrado) {
-            return ResponseEntity.badRequest().body("Dados já cadastrados para outro tutor!");
-        } else {
-            repository.save(tutor);
+    public ResponseEntity<String> cadastrar(@RequestBody @Valid CadastroTutorDto dto) {
+        try {
+            service.cadastrar(dto);
             return ResponseEntity.ok().build();
+        } catch (ValidacaoException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
         }
     }
 
     @PutMapping
     @Transactional
-    public ResponseEntity<String> atualizar(@RequestBody @Valid Tutor tutor) {
-        repository.save(tutor);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> atualizar(@RequestBody @Valid AtualizacaoTutorDto dto) {
+        try {
+            service.atualizar(dto);
+            return ResponseEntity.ok().build();
+        } catch (ValidacaoException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
     }
 
 }
